@@ -1,0 +1,38 @@
+h1. Introduction
+
+This is a small class I developed when working with a large amount of strings in a small side project. Basically the default string
+class in Java wastes a lot of memory and has a hashcode function that is not suitable in combination with a very large hash table (think tens of millions of entries). Basically insert speed drops because the number of buckets is not large enough. I ran into this even before getting to a million entries.
+
+Efficient string does a few things:
+* It stores utf-8 byte arrays. Depending on the script, this saves quite a bit of space.
+* It provides a reasonable hash function based on the CRC and a modulo of 50000 (so you have a maximum of 50K buckets in a HashMap<EfficientString>).
+* It provides an int index that uniquely identifies the String
+* It keeps a bimap of EfficientString to Integer, which is used to lookup the strings using their int index. This data structure imposes a little memory overhead but it allows you to prevent further overhead by using ints instead of object references to refer to Strings. So instead of creating Lists of Strings, you can work with much more compact arrays of integers.
+
+h1. Installation
+
+It's a maven project. So, checking it out and doing a mvn clean install should do the trick.
+
+Alternatively, you may use my github maven repository, which is where I deploy releases for some of my projects. In order to use this, you have to configure your settings.xml as explained here: https://github.com/jillesvangurp/mvnrepo
+
+Then you can add the following dependency:
+
+<pre>
+<code>
+<dependency>
+    <groupId>com.github.jillesvangurp</groupId>
+    <artifactId>efficientstring</artifactId>
+    <version>1.0</version>
+</dependency>
+</code>
+</pre>
+
+Alternatively, you can exercise your rights under the license and simply copy and adapt. The "license":https://github.com/jillesvangurp/efficientstring/blob/master/LICENSE allows you to do this and I have no problems with this.
+
+Should anyone like this licensed differently, please contact me.
+
+If anyone wants to fix stuff just send me a pull request.
+
+h1. Changelog
+
+* 1.0 - first release
