@@ -6,6 +6,7 @@ import java.util.zip.CRC32;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
@@ -31,7 +32,7 @@ public class EfficientString {
     // a fast enough hash function
     private static final CRC32 CRC_32 = new CRC32();
     private final int hashCode;
-    private static BiMap<EfficientString, Integer> allStrings = HashBiMap.create();
+    private static BiMap<EfficientString, Integer> allStrings = Maps.synchronizedBiMap(HashBiMap.<EfficientString, Integer>create());
     static int index = 0;
     private int myIndex = -1;
 
@@ -46,12 +47,14 @@ public class EfficientString {
      */
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
-        Integer existingIndex = allStrings.get(efficientString);
-        if (existingIndex != null) {
-            return allStrings.inverse().get(existingIndex);
-        } else {
-            efficientString.myIndex = index++;
-            allStrings.put(efficientString, efficientString.myIndex);
+        synchronized (allStrings) {
+            Integer existingIndex = allStrings.get(efficientString);
+            if (existingIndex != null) {
+                return allStrings.inverse().get(existingIndex);
+            } else {
+                efficientString.myIndex = index++;
+                allStrings.put(efficientString, efficientString.myIndex);
+            }
         }
 
         return efficientString;
