@@ -4,10 +4,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
-
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
  * e.g. hash maps in a memory efficient manner.
@@ -27,12 +23,15 @@ import com.google.common.collect.Maps;
  * buckets. You may want to tweak this function for your use case.
  */
 public class EfficientString {
+    static final int HASH_MODULO = 5;
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private final byte[] bytes;
     // a fast enough hash function
     private static final CRC32 CRC_32 = new CRC32();
     private final int hashCode;
-    private static BiMap<EfficientString, Integer> allStrings = Maps.synchronizedBiMap(HashBiMap.<EfficientString, Integer>create());
+//    private static BiMap<EfficientString, Integer> allStrings = Maps.synchronizedBiMap(HashBiMap.<EfficientString, Integer>create());
+    
+    private static EfficientStringBiMap allStrings = new EfficientStringBiMap();
     static int index = 0;
     private int myIndex = -1;
 
@@ -50,7 +49,7 @@ public class EfficientString {
         synchronized (allStrings) {
             Integer existingIndex = allStrings.get(efficientString);
             if (existingIndex != null) {
-                return allStrings.inverse().get(existingIndex);
+                return allStrings.get(existingIndex);
             } else {
                 efficientString.myIndex = index++;
                 allStrings.put(efficientString, efficientString.myIndex);
@@ -65,7 +64,7 @@ public class EfficientString {
      * @return the efficient string or null if it doesn't exist.
      */
     public static EfficientString get(int index) {
-        return allStrings.inverse().get(index);
+        return allStrings.get(index);
     }
 
     /**
@@ -86,7 +85,7 @@ public class EfficientString {
         CRC_32.reset();
         CRC_32.update(bytes);
         // this ensures buckets can contain quite a few entries but it saves memory space
-        return (int) (CRC_32.getValue() % 50000);
+        return (int) (CRC_32.getValue() % HASH_MODULO);
     }
 
     @Override
