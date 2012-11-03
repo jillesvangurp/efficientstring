@@ -11,8 +11,8 @@ public class EfficientStringBiMapTest {
     public void shouldPutAndGetStuff() {
         EfficientStringBiMap map = new EfficientStringBiMap();
         EfficientString es = EfficientString.fromString("foo");
-        map.put(es, 42);
-        assertThat(map.get(es), is(42));        
-        assertThat(map.get(42), is(es));        
+        map.put(es);
+        assertThat(map.get(es), is(es.index()));        
+        assertThat(map.get(es.index()), is(es));        
     }
 }

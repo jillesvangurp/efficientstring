@@ -23,13 +23,13 @@ import java.util.zip.CRC32;
  * buckets. You may want to tweak this function for your use case.
  */
 public class EfficientString {
-    static final int HASH_MODULO = 5;
+    static final int HASH_MODULO = 50000;
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private final byte[] bytes;
     // a fast enough hash function
     private static final CRC32 CRC_32 = new CRC32();
+    
     private final int hashCode;
-//    private static BiMap<EfficientString, Integer> allStrings = Maps.synchronizedBiMap(HashBiMap.<EfficientString, Integer>create());
     
     private static EfficientStringBiMap allStrings = new EfficientStringBiMap();
     static int index = 0;
@@ -47,12 +47,12 @@ public class EfficientString {
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
         synchronized (allStrings) {
-            Integer existingIndex = allStrings.get(efficientString);
-            if (existingIndex != null) {
+            int existingIndex = allStrings.get(efficientString);
+            if (existingIndex >= 0) {
                 return allStrings.get(existingIndex);
             } else {
                 efficientString.myIndex = index++;
-                allStrings.put(efficientString, efficientString.myIndex);
+                allStrings.put(efficientString);
             }
         }
 
@@ -80,7 +80,7 @@ public class EfficientString {
     public static int nextIndex() {
         return index;
     }
-
+    
     private int calculateHashCode() {
         CRC_32.reset();
         CRC_32.update(bytes);

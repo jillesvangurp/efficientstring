@@ -3,11 +3,14 @@ package com.jillesvangurp.efficientstring;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.util.Set;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.jillesvangurp.efficientstring.EfficientString;
+import com.google.common.collect.Sets;
 
 @Test
 public class EfficientStringTest {
@@ -40,5 +43,19 @@ public class EfficientStringTest {
     public void shouldBeAbleToRetrieveUsingIndex() {
         EfficientString es = EfficientString.fromString("bar");
         assertThat(EfficientString.get(es.index()).toString(), is("bar"));
+    }
+    
+    public void shouldStoreAndRetrieveManyStrings() {
+        Set<EfficientString> created = Sets.newHashSet();
+        //exceed the average bucket size to force growth of the buckets
+        for(int i=0;i<6*EfficientString.HASH_MODULO;i++) { 
+            EfficientString fromString = EfficientString.fromString(""+i);
+            assertThat(fromString, notNullValue());
+            created.add(fromString);            
+        }
+        for (EfficientString efficientString : created) {
+            assertThat(EfficientString.get(efficientString.index()), is(efficientString));
+            assertThat(EfficientString.fromString(efficientString.toString()), is(efficientString));
+        }
     }
 }

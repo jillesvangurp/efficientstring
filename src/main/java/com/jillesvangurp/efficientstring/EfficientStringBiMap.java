@@ -11,12 +11,9 @@ import java.util.Arrays;
 public class EfficientStringBiMap {
     Bucket[] buckets = new Bucket[HASH_MODULO*2];
 
-    public void put(EfficientString key, int value) {
-        Object[] entry = new Object[2];
-        entry[0] = key;
-        entry[1] = value;
-        getOrCreateBucket(key.hashCode()).append(entry);        
-        getOrCreateBucket(HASH_MODULO+value%HASH_MODULO).append(entry);
+    public void put(EfficientString es) {
+        getOrCreateBucket(es.hashCode()).append(es);        
+        getOrCreateBucket(HASH_MODULO+es.index()%HASH_MODULO).append(es);
     }
 
     private Bucket getOrCreateBucket(int index) {
@@ -28,78 +25,74 @@ public class EfficientStringBiMap {
         return bucket;
     }
     
-    public Integer get(EfficientString key) {
+    public int get(EfficientString key) {
         Bucket bucket = buckets[key.hashCode()];
         if(bucket == null) {
-            return null;
+            return -1;
         } else {
             return bucket.get(key);
         }    
     }
     
-    public EfficientString get(int value) {
-        Bucket bucket = buckets[HASH_MODULO+value%HASH_MODULO];
+    public EfficientString get(int index) {
+        Bucket bucket = buckets[HASH_MODULO+index%HASH_MODULO];
         if(bucket==null) {
             return null;
         } else {
-            return bucket.get(value);
+            return bucket.get(index);
         }
     }
-    
+        
     class Bucket {
-        Object[] array = new Object[5];
+        EfficientString[] array = new EfficientString[5];
 
-        public void append(Object[] entry) {
-            int freeSlot = findFreeOrExistingSlot(((EfficientString)entry[0]));
+        public void append(EfficientString es) {
+            int freeSlot = findFreeOrExistingSlot(es);
             if (freeSlot >= array.length) {
                 array = Arrays.copyOf(array, (int) Math.round(array.length * 1.3));
             }
-            array[freeSlot] = entry;
+            array[freeSlot] = es;
         }
 
-        private int findFreeOrExistingSlot(EfficientString key) {
+        private int findFreeOrExistingSlot(EfficientString es) {
             for (int i = 0; i < array.length; i++) {
                 if (array[i] == null) {
                     return i;
                 }
-                Object[] entry = (Object[]) array[i];
-                if (((EfficientString)entry[0]).index() == key.index()) {
+                EfficientString entry = array[i];
+                if (entry.index() == es.index()) {
                     return i;
                 }
             }
             return array.length;
         }
 
-        public Integer get(EfficientString key) {
-            for (Object e : array) {
+        public int get(EfficientString key) {
+            for (EfficientString e : array) {
                 if(e==null) {
                     break;
                 }
-                Object[] entry = (Object[]) e;
-                EfficientString k = (EfficientString) entry[0];
-                if (key.equals(k)) {
-                    return (Integer) entry[1];
+                if (key.equals(e)) {
+                    return e.index();
                 }
             }
-            return null;
+            return -1;
         }
         
-        public EfficientString get(Integer value) {
-            for (Object e : array) {
+        public EfficientString get(int value) {
+            for (EfficientString e : array) {
                 if(e==null) {
-                    break;
+                    return null;
                 }
-                Object[] entry = (Object[]) e;
-                Integer v = (Integer) entry[1];
-                if (value.equals(v)) {
-                    return (EfficientString) entry[0];
+                if (value==e.index()) {
+                    return e;
                 }
             }
             return null;
         }
 
         public boolean contains(EfficientString key) {
-            return get(key) != null;
+            return get(key) >=0;
         }
     }
 }
