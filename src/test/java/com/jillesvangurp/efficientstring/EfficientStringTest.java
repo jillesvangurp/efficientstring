@@ -1,13 +1,11 @@
 package com.jillesvangurp.efficientstring;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Set;
 
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.Sets;
@@ -15,23 +13,12 @@ import com.google.common.collect.Sets;
 @Test
 public class EfficientStringTest {
     
-    @BeforeClass
-    public void beforeClass() {
-        EfficientString.fromString("abc");
-        EfficientString.fromString("def");
-        EfficientString.fromString("ghi");
-        EfficientString.fromString("jkl");
-    }
-
-    public void shouldNotCreateNewStrings() {
-        assertThat(EfficientString.fromString("abc").index(), is(0));
-        assertThat(EfficientString.fromString("def").index(), is(1));
-        assertThat(EfficientString.fromString("ghi").index(), is(2));
-        assertThat(EfficientString.fromString("jkl").index(), is(3));
-    }
-    
     public void shouldCreateNewString() {
-        assertThat(EfficientString.fromString("foo").index(), greaterThan(3));        
+        int next = EfficientString.index;
+        String str = "foo"+System.currentTimeMillis();
+        EfficientString es = EfficientString.fromString(str);
+        assertThat(es.index(), is(next));
+        assertThat(EfficientString.get(next), is(es));
     }
     
     public void shouldShareSameInstance() {
