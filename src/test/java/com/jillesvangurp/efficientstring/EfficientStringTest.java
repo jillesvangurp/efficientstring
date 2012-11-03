@@ -14,7 +14,7 @@ import com.google.common.collect.Sets;
 public class EfficientStringTest {
     
     public void shouldCreateNewString() {
-        int next = EfficientString.index;
+        int next = EfficientString.nextIndex();
         String str = "foo"+System.currentTimeMillis();
         EfficientString es = EfficientString.fromString(str);
         assertThat(es.index(), is(next));

@@ -2,7 +2,10 @@ package com.jillesvangurp.efficientstring;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.CRC32;
+
+import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
@@ -28,11 +31,12 @@ public class EfficientString {
     private final byte[] bytes;
     // a fast enough hash function
     private static final CRC32 CRC_32 = new CRC32();
-    
+
     private final int hashCode;
-    
+
     private static EfficientStringBiMap allStrings = new EfficientStringBiMap();
-    static int index = 0;
+    // static int index = 0;
+    static AtomicInteger index = new AtomicInteger(0);
     private int myIndex = -1;
 
     private EfficientString(String s) {
@@ -46,16 +50,29 @@ public class EfficientString {
      */
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
-        synchronized (allStrings) {
-            int existingIndex = allStrings.get(efficientString);
-            if (existingIndex >= 0) {
-                return allStrings.get(existingIndex);
-            } else {
-                efficientString.myIndex = index++;
-                allStrings.put(efficientString);
+        Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
+        long currentWritesToBucket = bucket.writes.get();
+
+        int existingIndex = allStrings.get(efficientString);
+        if (existingIndex >= 0) {
+            return allStrings.get(existingIndex);
+        } else {
+            efficientString.myIndex = index.getAndIncrement();
+            // synchronize on the bucket we are writing to
+            if (bucket.writes.get() == currentWritesToBucket) {
+                synchronized (bucket) {
+                    if (bucket.writes.get() != currentWritesToBucket) {
+                        existingIndex = bucket.get(efficientString);
+                        if (existingIndex >= 0) {
+                            // conflicting write
+                            return allStrings.get(existingIndex);
+                        }
+                    }
+                    // no conflict
+                    allStrings.put(efficientString);
+                }
             }
         }
-
         return efficientString;
     }
 
@@ -78,9 +95,9 @@ public class EfficientString {
      * @return the index that will be used for the next string that is created with fromString.
      */
     public static int nextIndex() {
-        return index;
+        return index.get();
     }
-    
+
     private int calculateHashCode() {
         CRC_32.reset();
         CRC_32.update(bytes);
