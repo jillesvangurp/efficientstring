@@ -13,14 +13,23 @@ public class EfficientStringBiMap {
     Bucket[] buckets = new Bucket[HASH_MODULO * 2];
 
     public void put(EfficientString es) {
-        getOrCreateBucket(es.hashCode()).append(es);
-        getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO).append(es);
+        
+        Bucket lower = getOrCreateBucket(es.hashCode());
+        Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
+        synchronized(lower) {
+            synchronized(upper) {
+                lower.append(es);
+                upper.append(es);
+            }
+        }
     }
     
     Bucket getOrCreateBucket(int index) {
         if (buckets[index] == null) {
-            synchronized (this) {
-                buckets[index] = new Bucket();
+            synchronized (buckets) {
+                if (buckets[index] == null) {
+                    buckets[index] = new Bucket();
+                }
             }
         }
         return buckets[index];
