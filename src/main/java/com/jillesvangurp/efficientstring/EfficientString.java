@@ -51,26 +51,20 @@ public class EfficientString {
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
         Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
-        long currentWritesToBucket = bucket.writes.get();
 
         int existingIndex = allStrings.get(efficientString);
         if (existingIndex >= 0) {
             return allStrings.get(existingIndex);
         } else {
-            efficientString.myIndex = index.getAndIncrement();
-            // synchronize on the bucket we are writing to
-            if (bucket.writes.get() == currentWritesToBucket) {
-                synchronized (bucket) {
-                    if (bucket.writes.get() != currentWritesToBucket) {
-                        existingIndex = bucket.get(efficientString);
-                        if (existingIndex >= 0) {
-                            // conflicting write
-                            return allStrings.get(existingIndex);
-                        }
-                    }
-                    // no conflict
-                    allStrings.put(efficientString);
+            synchronized (bucket) {
+                existingIndex = bucket.get(efficientString);
+                if (existingIndex >= 0) {
+                    // conflicting write
+                    return allStrings.get(existingIndex);
                 }
+                // no conflict
+                efficientString.myIndex = index.getAndIncrement();
+                allStrings.put(efficientString);
             }
         }
         return efficientString;

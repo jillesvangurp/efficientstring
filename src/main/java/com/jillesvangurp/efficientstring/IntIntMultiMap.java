@@ -174,7 +174,7 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
             int keyIndex = -1;
             for (int i = 0; i < values.length; i++) {
                 int[] list = values[i];
-                if (list.length == 0) {
+                if (list==null||list.length == 0) {
                     // empty slot, use it
                     list = createList(key);
                     values[i] = list;
