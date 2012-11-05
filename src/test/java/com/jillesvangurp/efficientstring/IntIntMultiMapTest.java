@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 
@@ -40,5 +42,35 @@ public class IntIntMultiMapTest {
             }
             assertThat(unique.size(), is(values.length));
         }        
+    }
+    
+    public void shouldIterate() {
+        IntIntMultiMap map = new IntIntMultiMap();
+        for(int i=0; i<666; i++) {
+            for(int j=0;j<13;j++) {
+                map.put(i , j);
+            }
+        }
+        int count=0;
+        for(Entry<Integer, Integer> e: map) {
+            assertThat(e.getKey(), greaterThan(-1));
+            assertThat(e.getValue(), greaterThan(-1));
+            count++;
+        }
+        assertThat(count,is(666*13));
+    }
+    
+    public void shouldIterateOverLists() {
+        IntIntMultiMap map = new IntIntMultiMap();
+        for(int i=0; i<666; i++) {
+            for(int j=0;j<13;j++) {
+                map.put(i , j);
+            }
+        }
+        int count=0;
+        for(Entry<Integer, Set<Integer>> e: map.values()) {
+            count+=e.getValue().size();
+        }
+        assertThat(count,is(666*13));
     }
 }
