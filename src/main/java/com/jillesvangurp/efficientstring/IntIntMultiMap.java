@@ -230,7 +230,7 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
                         while (current == null && index < values.length) {                            
                             current = values[index++];
                         }
-                        if (current.length != 0) {
+                        if (current != null && current.length != 0) {
                             int empty = 0;
                             for (int j = current.length - 1; j >= 0; j--) {
                                 if (current[j] == -1) {
