@@ -12,9 +12,35 @@ import com.google.common.collect.Sets;
  * Multi map for integers. May be used for storing efficient string indices. This class is thread safe.
  */
 public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
-    private static final int BUCKETS = 50000;
-    private final Bucket[] buckets = new Bucket[BUCKETS];
+    private final int numberOfBuckets;
+    private final Bucket[] buckets; 
 
+    /**
+     * Initializes the map with 50000 buckets.
+     */
+    public IntIntMultiMap() {
+        numberOfBuckets=50000;
+        buckets = new Bucket[numberOfBuckets];
+    }
+
+    /**
+     * Initialize the map with the specified number of buckets. You should pick this number such that the map can
+     * accomodate you dataset without degenerating performance too much. Insertion/lookup time per bucket scales
+     * linearly to the number of entries in it. The price of increasing the number of buckets is wasting more memory on
+     * them.
+     * 
+     * @param numberOfBuckets
+     */
+    public IntIntMultiMap(int numberOfBuckets) {
+        this.numberOfBuckets=numberOfBuckets;
+        buckets = new Bucket[numberOfBuckets];
+    }
+
+    /**
+     * Add value to the list of values associated with key.
+     * @param key
+     * @param value
+     */
     public void put(int key, int value) {
         if (value < 0) {
             throw new IllegalArgumentException("put can only take positive values");
@@ -25,12 +51,16 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
         }
     }
 
+    /**
+     * @param key
+     * @return the list of values associated with key or an empty array.
+     */
     public int[] get(int key) {
         Bucket bucket = buckets[getBucketIndex(key)];
         if (bucket != null) {
             return bucket.get(key);
         }
-        return null;
+        return new int[0];
 
     }
 
@@ -50,9 +80,12 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
     }
 
     private int getBucketIndex(int key) {
-        return key % BUCKETS;
+        return key % numberOfBuckets;
     }
 
+    /**
+     * @return an Iterable with key, value[] entries.
+     */
     public Iterable<Entry<Integer, Set<Integer>>> values() {
         return new Iterable<Entry<Integer, Set<Integer>>>() {
 
@@ -112,6 +145,9 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
         };
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Iterable#iterator()
+     */
     @Override
     public Iterator<Entry<Integer, Integer>> iterator() {
 
@@ -167,7 +203,7 @@ public class IntIntMultiMap implements Iterable<Entry<Integer, Integer>> {
         };
     }
 
-    class Bucket implements Iterable<Entry<Integer, Integer>> {
+    private class Bucket implements Iterable<Entry<Integer, Integer>> {
         private int[][] values = new int[5][0];
 
         public void put(int key, int value) {

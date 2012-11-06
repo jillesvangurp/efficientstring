@@ -24,6 +24,8 @@ import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
  * The hashcode function is based on a CRC hash of the string with a modulo of 50000. This gives you a reasonable
  * distribution of strings over a hashtable without introducing a lot of memory overhead for creating additional
  * buckets. You may want to tweak this function for your use case.
+ * 
+ * This class is thread safe and locks at the bucket level.
  */
 public class EfficientString {
     static final int HASH_MODULO = 50000;
@@ -36,7 +38,7 @@ public class EfficientString {
 
     private static EfficientStringBiMap allStrings = new EfficientStringBiMap();
     // static int index = 0;
-    static AtomicInteger index = new AtomicInteger(0);
+    private static AtomicInteger index = new AtomicInteger(0);
     private int myIndex = -1;
 
     private EfficientString(String s) {
@@ -121,5 +123,13 @@ public class EfficientString {
     @Override
     public String toString() {
         return new String(bytes, UTF8);
+    }
+    
+    /**
+     * Clears the registry of existing Strings and resets the index to 0. Use this to free up memory.
+     */
+    public static void clear() {
+        allStrings = new EfficientStringBiMap();
+        index.set(0);
     }
 }
