@@ -26,5 +26,12 @@ If anyone wants to fix stuff just send me a pull request.
 
 h1. Changelog
 
-* 1.1 - replace guava bimap with a more memory efficient custom structure.
-* 1.0 - first release
+* 1.2
+** Add clear method
+** Add IntIntMultiMap to store string references efficiently.
+** Improve synchronization and locking
+** Misc bug fixes
+* 1.1
+** replace guava bimap with a more memory efficient custom structure.
+* 1.0
+** first release
