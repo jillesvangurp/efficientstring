@@ -41,9 +41,9 @@
     </licenses>
 
     <scm>
-        <url>git://github.com/jillesvangurp/efficientstring.git</url>
+        <url>git@github.com:jillesvangurp/efficientstring.git</url>
         <connection>scm:git:git@github.com:jillesvangurp/efficientstring.git</connection>
-        <developerConnection>scm:git:git://github.com/jillesvangurp/efficientstring.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:jillesvangurp/efficientstring.git</developerConnection>
     </scm>
 
 	<distributionManagement>
