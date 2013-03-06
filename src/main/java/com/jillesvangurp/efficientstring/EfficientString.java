@@ -10,21 +10,21 @@ import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
  * e.g. hash maps in a memory efficient manner.
- * 
+ *
  * The problem with Strings in Java is that Java stores them as UTF-16 internally, which means that for many scripts you
  * are wasting memory. Additionally the hashCode function is not suitable for extremely large hashmaps and results in
  * too few buckets, which means your insert speed becomes progressively slower.
- * 
+ *
  * This class solves both problems and in addition adds the ability to use ints as identifiers for your strings. This
  * limits the number of strings to MAXINT (2.147.483.647), about two billion. Having an int as an identifier means you
  * can store string references in int arrays, which is a lot more compact than having arrays of object references, which
  * are 64 bit in Java. To avoid wasting memory, identical strings have the same integer identifier (i.e. no duplicate
  * strings are created).
- * 
+ *
  * The hashcode function is based on a CRC hash of the string with a modulo of 50000. This gives you a reasonable
  * distribution of strings over a hashtable without introducing a lot of memory overhead for creating additional
  * buckets. You may want to tweak this function for your use case.
- * 
+ *
  * This class is thread safe and locks at the bucket level.
  */
 public class EfficientString {
@@ -124,7 +124,14 @@ public class EfficientString {
     public String toString() {
         return new String(bytes, UTF8);
     }
-    
+
+    /**
+     * @return the UTF-8 bytes for this efficient string
+     */
+    public byte[] bytes() {
+        return bytes;
+    }
+
     /**
      * Clears the registry of existing Strings and resets the index to 0. Use this to free up memory.
      */
