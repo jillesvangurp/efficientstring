@@ -32,7 +32,14 @@ public class EfficientString {
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private final byte[] bytes;
     // a fast enough hash function
-    private static final CRC32 CRC_32 = new CRC32();
+//    private static final CRC32 CRC_32 = new CRC32();
+
+    ThreadLocal<CRC32> crc32ThreadLocal = new ThreadLocal<CRC32>() {
+        @Override
+        protected CRC32 initialValue() {
+            return new CRC32();
+        }
+    };
 
     private final int hashCode;
 
@@ -52,13 +59,13 @@ public class EfficientString {
      */
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
-        Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
 
         int existingIndex = allStrings.get(efficientString);
         if (existingIndex >= 0) {
             return allStrings.get(existingIndex);
         } else {
-            synchronized (bucket) {
+            synchronized (allStrings) {
+                Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
                 existingIndex = bucket.get(efficientString);
                 if (existingIndex >= 0) {
                     // conflicting write
@@ -95,10 +102,12 @@ public class EfficientString {
     }
 
     private int calculateHashCode() {
-        CRC_32.reset();
-        CRC_32.update(bytes);
+        // CRC32 is not thread safe, so give each thread their own implementation
+        CRC32 crc32 = crc32ThreadLocal.get();
+        crc32.reset();
+        crc32.update(bytes);
         // this ensures buckets can contain quite a few entries but it saves memory space
-        return (int) (CRC_32.getValue() % HASH_MODULO);
+        return (int) (crc32.getValue() % HASH_MODULO);
     }
 
     @Override

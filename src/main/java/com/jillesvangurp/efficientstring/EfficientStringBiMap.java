@@ -12,21 +12,17 @@ import java.util.concurrent.atomic.AtomicLong;
 public class EfficientStringBiMap {
     Bucket[] buckets = new Bucket[HASH_MODULO * 2];
 
+
     public void put(EfficientString es) {
-        
-        Bucket lower = getOrCreateBucket(es.hashCode());
         Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
-        synchronized(lower) {
-            synchronized(upper) {
-                lower.append(es);
-                upper.append(es);
-            }
-        }
+            Bucket lower = getOrCreateBucket(es.hashCode());
+            lower.append(es);
+            upper.append(es);
     }
-    
+
     Bucket getOrCreateBucket(int index) {
         if (buckets[index] == null) {
-            synchronized (buckets) {
+            synchronized(this) {
                 if (buckets[index] == null) {
                     buckets[index] = new Bucket();
                 }
