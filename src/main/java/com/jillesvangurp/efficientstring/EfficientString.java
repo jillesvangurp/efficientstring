@@ -3,8 +3,9 @@ package com.jillesvangurp.efficientstring;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.CRC32;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 
 /**
@@ -28,18 +29,10 @@ import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
  * This class is thread safe and locks at the bucket level.
  */
 public class EfficientString {
+    private static final HashFunction HASH_FUNCTION = Hashing.murmur3_32();
     static final int HASH_MODULO = 50000;
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private final byte[] bytes;
-    // a fast enough hash function
-//    private static final CRC32 CRC_32 = new CRC32();
-
-    ThreadLocal<CRC32> crc32ThreadLocal = new ThreadLocal<CRC32>() {
-        @Override
-        protected CRC32 initialValue() {
-            return new CRC32();
-        }
-    };
 
     private final int hashCode;
 
@@ -102,12 +95,7 @@ public class EfficientString {
     }
 
     private int calculateHashCode() {
-        // CRC32 is not thread safe, so give each thread their own implementation
-        CRC32 crc32 = crc32ThreadLocal.get();
-        crc32.reset();
-        crc32.update(bytes);
-        // this ensures buckets can contain quite a few entries but it saves memory space
-        return (int) (crc32.getValue() % HASH_MODULO);
+        return Math.abs(HASH_FUNCTION.hashBytes(bytes).asInt()) % HASH_MODULO;
     }
 
     @Override
