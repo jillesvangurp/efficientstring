@@ -14,10 +14,14 @@ public class EfficientStringBiMap {
 
 
     public void put(EfficientString es) {
-        Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
+            Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
             Bucket lower = getOrCreateBucket(es.hashCode());
-            lower.append(es);
-            upper.append(es);
+            synchronized (lower) {
+                synchronized (upper) {
+                    lower.append(es);
+                    upper.append(es);
+                }
+            }
     }
 
     Bucket getOrCreateBucket(int index) {
