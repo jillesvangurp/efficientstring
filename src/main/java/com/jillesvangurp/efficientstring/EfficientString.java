@@ -3,6 +3,7 @@ package com.jillesvangurp.efficientstring;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -40,6 +41,7 @@ public class EfficientString {
     // static int index = 0;
     private static AtomicInteger index = new AtomicInteger(0);
     private int myIndex = -1;
+    private static ReentrantLock lock=new ReentrantLock();;
 
     private EfficientString(String s) {
         bytes = s.getBytes(UTF8);
@@ -57,7 +59,8 @@ public class EfficientString {
         if (existingIndex >= 0) {
             return allStrings.get(existingIndex);
         } else {
-            synchronized (allStrings) {
+            lock.lock();
+            try {
                 Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
                 existingIndex = bucket.get(efficientString);
                 if (existingIndex >= 0) {
@@ -67,6 +70,8 @@ public class EfficientString {
                 // no conflict
                 efficientString.myIndex = index.getAndIncrement();
                 allStrings.put(efficientString);
+            } finally {
+                lock.unlock();
             }
         }
         return efficientString;
