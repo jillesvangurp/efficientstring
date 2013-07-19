@@ -51,9 +51,11 @@ public class EfficientStringTest {
 
     public void shouldSupportConcurrentCreation() throws InterruptedException {
         int modulo = 50;
+        int startIndex = EfficientString.nextIndex();
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(modulo);
         for(int i=0;i<100000;i++) {
-            final String str=""+ (i%modulo);
+            // make sure we are actually creating new Strings with no overlap with the other tests
+            final String str="shouldSupportConcurrentCreation-"+ (i%modulo);
             executorService.execute(new Runnable() {
 
                 @Override
@@ -66,6 +68,6 @@ public class EfficientStringTest {
 
         executorService.shutdown();
         executorService.awaitTermination(2, TimeUnit.SECONDS);
-        assertThat(EfficientString.nextIndex(), is(modulo));
+        assertThat(EfficientString.nextIndex()-startIndex, is(modulo));
     }
 }
