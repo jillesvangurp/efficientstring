@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class EfficientStringBiMap {
     Bucket[] buckets = new Bucket[HASH_MODULO * 2];
 
-
     public void put(EfficientString es) {
             Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
             Bucket lower = getOrCreateBucket(es.hashCode());
