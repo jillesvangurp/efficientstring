@@ -3,7 +3,7 @@ package com.jillesvangurp.efficientstring;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -41,7 +41,7 @@ public class EfficientString {
     // static int index = 0;
     private static AtomicInteger index = new AtomicInteger(0);
     private int myIndex = -1;
-    private static ReentrantLock lock=new ReentrantLock();;
+    private static ReentrantReadWriteLock lock=new ReentrantReadWriteLock();;
 
     private EfficientString(String s) {
         bytes = s.getBytes(UTF8);
@@ -59,7 +59,7 @@ public class EfficientString {
         if (existingIndex >= 0) {
             return allStrings.get(existingIndex);
         } else {
-            lock.lock();
+            lock.writeLock().lock();
             try {
                 Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
                 existingIndex = bucket.get(efficientString);
@@ -71,7 +71,7 @@ public class EfficientString {
                 efficientString.myIndex = index.getAndIncrement();
                 allStrings.put(efficientString);
             } finally {
-                lock.unlock();
+                lock.writeLock().unlock();
             }
         }
         return efficientString;
@@ -82,7 +82,12 @@ public class EfficientString {
      * @return the efficient string or null if it doesn't exist.
      */
     public static EfficientString get(int index) {
-        return allStrings.get(index);
+        lock.readLock().lock();
+        try {
+            return allStrings.get(index);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -138,7 +143,12 @@ public class EfficientString {
      * Clears the registry of existing Strings and resets the index to 0. Use this to free up memory.
      */
     public static void clear() {
-        allStrings = new EfficientStringBiMap();
-        index.set(0);
+        lock.writeLock().lock();
+        try {
+            allStrings = new EfficientStringBiMap();
+            index.set(0);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 }
