@@ -3,32 +3,25 @@ package com.jillesvangurp.efficientstring;
 import static com.jillesvangurp.efficientstring.EfficientString.HASH_MODULO;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A memory efficient bimap of EfficientString to int that uses the int index of the EfficientStrings rather than object
  * references..
  */
 public class EfficientStringBiMap {
-    Bucket[] buckets = new Bucket[HASH_MODULO * 2];
+    volatile Bucket[] buckets = new Bucket[HASH_MODULO * 2];
 
     public void put(EfficientString es) {
             Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
             Bucket lower = getOrCreateBucket(es.hashCode());
-            synchronized (lower) {
-                synchronized (upper) {
-                    lower.append(es);
-                    upper.append(es);
-                }
-            }
+            lower.append(es);
+            upper.append(es);
     }
 
     Bucket getOrCreateBucket(int index) {
         if (buckets[index] == null) {
-            synchronized(this) {
-                if (buckets[index] == null) {
-                    buckets[index] = new Bucket();
-                }
+            if (buckets[index] == null) {
+                buckets[index] = new Bucket();
             }
         }
         return buckets[index];
@@ -48,13 +41,13 @@ public class EfficientStringBiMap {
         if (bucket == null) {
             return null;
         } else {
+
             return bucket.get(index);
         }
     }
 
     class Bucket {
-        final AtomicLong writes = new AtomicLong(0);
-        EfficientString[] array = new EfficientString[5];
+        volatile EfficientString[] array = new EfficientString[5];
 
         public void append(EfficientString es) {
             int freeSlot = findFreeOrExistingSlot(es);
@@ -62,7 +55,6 @@ public class EfficientStringBiMap {
                 array = Arrays.copyOf(array, (int) Math.round(array.length * 1.3));
             }
             array[freeSlot] = es;
-            writes.getAndIncrement();
         }
 
         private int findFreeOrExistingSlot(EfficientString es) {

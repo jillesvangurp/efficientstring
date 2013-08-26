@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
@@ -57,16 +56,21 @@ public class EfficientString {
 
         int existingIndex = allStrings.get(efficientString);
         if (existingIndex >= 0) {
-            return allStrings.get(existingIndex);
+            lock.readLock().lock();
+            try {
+                return allStrings.get(existingIndex);
+            } finally {
+                lock.readLock().unlock();
+            }
         } else {
             lock.writeLock().lock();
             try {
-                Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
-                existingIndex = bucket.get(efficientString);
-                if (existingIndex >= 0) {
-                    // conflicting write
-                    return allStrings.get(existingIndex);
-                }
+//                Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
+//                existingIndex = bucket.get(efficientString);
+//                if (existingIndex >= 0) {
+//                    // conflicting write
+//                    return allStrings.get(existingIndex);
+//                }
                 // no conflict
                 efficientString.myIndex = index.getAndIncrement();
                 allStrings.put(efficientString);
