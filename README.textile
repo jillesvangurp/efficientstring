@@ -28,8 +28,8 @@ If anyone wants to fix stuff just send me a pull request.
 
 h1. Changelog
 
-* 1.7
-** Fix another race condition; use a proper ReentrantLock this time.
+* 1.5-1.9
+** Use read/write lock and get rid of synchronized to fix issue where client sees a null value while it is being inserted.
 * 1.4-1.6
 ** fix race condition with partial update being seen by client code
 ** now requires java 1.7
