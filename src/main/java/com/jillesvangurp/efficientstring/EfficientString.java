@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
@@ -53,30 +54,29 @@ public class EfficientString {
      */
     public static EfficientString fromString(String s) {
         EfficientString efficientString = new EfficientString(s);
-
-        int existingIndex = allStrings.get(efficientString);
-        if (existingIndex >= 0) {
-            lock.readLock().lock();
-            try {
+        int existingIndex;
+        lock.readLock().lock();
+        try {
+            existingIndex = allStrings.get(efficientString);
+            if (existingIndex >= 0) {
                 return allStrings.get(existingIndex);
-            } finally {
-                lock.readLock().unlock();
             }
-        } else {
-            lock.writeLock().lock();
-            try {
-//                Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
-//                existingIndex = bucket.get(efficientString);
-//                if (existingIndex >= 0) {
-//                    // conflicting write
-//                    return allStrings.get(existingIndex);
-//                }
-                // no conflict
-                efficientString.myIndex = index.getAndIncrement();
-                allStrings.put(efficientString);
-            } finally {
-                lock.writeLock().unlock();
+        } finally {
+            lock.readLock().unlock();
+        }
+        lock.writeLock().lock();
+        try {
+            Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
+            existingIndex = bucket.get(efficientString);
+            if (existingIndex >= 0) {
+                // conflicting write
+                return allStrings.get(existingIndex);
             }
+            // no conflict
+            efficientString.myIndex = index.getAndIncrement();
+            allStrings.put(efficientString);
+        } finally {
+            lock.writeLock().unlock();
         }
         return efficientString;
     }
