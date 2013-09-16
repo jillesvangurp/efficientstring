@@ -154,8 +154,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.8</version>
-            <type>jar</type>
+            <version>6.8.7</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -185,7 +184,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>14.0.1</version>
+            <version>15.0</version>
         </dependency>
     </dependencies>
 </project>
