@@ -1,18 +1,22 @@
 package com.jillesvangurp.efficientstring;
 
-import static com.jillesvangurp.efficientstring.EfficientString.HASH_MODULO;
-
 import java.util.Arrays;
 
 /**
  * A memory efficient bimap of EfficientString to int that uses the int index of the EfficientStrings rather than object
- * references..
+ * references.
  */
-public class EfficientStringBiMap {
-    volatile Bucket[] buckets = new Bucket[HASH_MODULO * 2];
+class EfficientStringBiMap {
+    final Bucket[] buckets;
+    private final int capacity;
+
+    public EfficientStringBiMap(int capacity) {
+        this.capacity = capacity;
+        buckets=new Bucket[capacity * 2];
+    }
 
     public void put(EfficientString es) {
-            Bucket upper = getOrCreateBucket(HASH_MODULO + es.index() % HASH_MODULO);
+            Bucket upper = getOrCreateBucket(capacity + es.index() % capacity);
             Bucket lower = getOrCreateBucket(es.hashCode());
             lower.append(es);
             upper.append(es);
@@ -37,7 +41,7 @@ public class EfficientStringBiMap {
     }
 
     public EfficientString get(int index) {
-        Bucket bucket = buckets[HASH_MODULO + index % HASH_MODULO];
+        Bucket bucket = buckets[capacity + index % capacity];
         if (bucket == null) {
             return null;
         } else {

@@ -37,7 +37,7 @@ public class EfficientString {
 
     private final int hashCode;
 
-    private static EfficientStringBiMap allStrings = new EfficientStringBiMap();
+    private static EfficientStringBiMap allStrings = new EfficientStringBiMap(HASH_MODULO);
     // static int index = 0;
     private static AtomicInteger index = new AtomicInteger(0);
     private int myIndex = -1;
@@ -149,7 +149,7 @@ public class EfficientString {
     public static void clear() {
         lock.writeLock().lock();
         try {
-            allStrings = new EfficientStringBiMap();
+            allStrings = new EfficientStringBiMap(HASH_MODULO);
             index.set(0);
         } finally {
             lock.writeLock().unlock();

@@ -7,12 +7,12 @@ import org.testng.annotations.Test;
 
 @Test
 public class EfficientStringBiMapTest {
-    
+
     public void shouldPutAndGetStuff() {
-        EfficientStringBiMap map = new EfficientStringBiMap();
+        EfficientStringBiMap map = new EfficientStringBiMap(EfficientString.HASH_MODULO);
         EfficientString es = EfficientString.fromString("foo");
         map.put(es);
-        assertThat(map.get(es), is(es.index()));        
-        assertThat(map.get(es.index()), is(es));        
+        assertThat(map.get(es), is(es.index()));
+        assertThat(map.get(es.index()), is(es));
     }
 }
