@@ -30,7 +30,7 @@
     <name>efficientstring</name>
     <description>A more memory efficient way of keeping large amount of strings in memory in Java</description>
     <url>https://jillesvangurp.com</url>
-
+    
     <licenses>
         <license>
             <name>MIT license</name>
@@ -45,17 +45,33 @@
         <developerConnection>scm:git:git@github.com:jillesvangurp/efficientstring.git</developerConnection>
     </scm>
 
-	<distributionManagement>
+    <repositories>
         <repository>
-            <id>release.repo</id>
-            <url>dav:http://repo.jillesvangurp.com/releases/</url>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
-        <snapshotRepository>
-            <id>snapshot.repo</id>
-            <url>dav:http://repo.jillesvangurp.com/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    </repositories>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+    
     <developers>
         <developer>
             <id>jillesvangurp</id>
@@ -75,6 +91,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <sonatypeOssDistMgmtSnapshotsUrl>https://oss.sonatype.org/content/repositories/snapshots/</sonatypeOssDistMgmtSnapshotsUrl>        
     </properties>
 
     <build>
@@ -118,6 +135,17 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- The Base URL of Nexus instance where we want to stage -->
+                    <nexusUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</nexusUrl>
+                    <serverId>sonatype-nexus-staging</serverId>
+                </configuration>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -126,6 +154,20 @@
             <version>2.2</version>
             </extension>
         </extensions>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.1</version>
+					<configuration>
+						<mavenExecutorId>forked-path</mavenExecutorId>
+						<useReleaseProfile>false</useReleaseProfile>
+						<arguments>${arguments} -Psonatype-oss-release</arguments>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>        
     </build>
     <profiles>
         <profile>
@@ -145,6 +187,18 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.1</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                        <!-- The Base URL of Nexus instance where we want to stage -->
+                            <nexusUrl>http://localhost:8081/nexus/</nexusUrl>
+                            <!-- The server "id" element from settings to use authentication from -->
+                            <serverId>local-nexus</serverId>
+                        </configuration>
+                    </plugin>                    
                 </plugins>
             </build>
         </profile>
