@@ -49,7 +49,7 @@ public class EfficientString {
     }
 
     /**
-     * @param s
+     * @param s a string
      * @return efficient string object for the given string
      */
     public static EfficientString fromString(String s) {
@@ -82,7 +82,7 @@ public class EfficientString {
     }
 
     /**
-     * @param index
+     * @param index index of an efficient string
      * @return the efficient string or null if it doesn't exist.
      */
     public static EfficientString get(int index) {
