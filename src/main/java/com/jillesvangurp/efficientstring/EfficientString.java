@@ -124,8 +124,8 @@ public class EfficientString {
         }
         EfficientString es = (EfficientString) obj;
         // before they are added to the bimap, efficient strings have an index of -1
-        if (es.myIndex != -1 && this.myIndex != -1) {
-            return es.myIndex == this.myIndex;
+        if (es.myIndex != -1 && myIndex != -1) {
+            return es.myIndex == myIndex;
         }
         // edge case that only occurs for strings that are being created
         return Arrays.equals(bytes, es.bytes);

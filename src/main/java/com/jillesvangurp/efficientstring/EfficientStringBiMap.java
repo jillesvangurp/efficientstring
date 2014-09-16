@@ -16,10 +16,10 @@ class EfficientStringBiMap {
     }
 
     public void put(EfficientString es) {
-            Bucket upper = getOrCreateBucket(capacity + es.index() % capacity);
-            Bucket lower = getOrCreateBucket(es.hashCode());
-            lower.append(es);
-            upper.append(es);
+        Bucket upper = getOrCreateBucket(capacity + es.index() % capacity);
+        Bucket lower = getOrCreateBucket(es.hashCode());
+        lower.append(es);
+        upper.append(es);
     }
 
     Bucket getOrCreateBucket(int index) {
