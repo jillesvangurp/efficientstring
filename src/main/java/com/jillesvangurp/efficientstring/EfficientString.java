@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.jillesvangurp.efficientstring.EfficientStringBiMap.Bucket;
 
 /**
  * Efficient String enables you to keep tens of millions of strings in memory and manipulate the resulting data set with
@@ -39,8 +38,8 @@ public class EfficientString {
 
     private static EfficientStringBiMap allStrings = new EfficientStringBiMap(HASH_MODULO);
     // static int index = 0;
-    private static AtomicInteger index = new AtomicInteger(0);
-    private int myIndex = -1;
+    private static AtomicInteger indexCounter = new AtomicInteger(0);
+    private int index = -1;
     private static ReentrantReadWriteLock lock=new ReentrantReadWriteLock();;
 
     private EfficientString(String s) {
@@ -66,14 +65,12 @@ public class EfficientString {
         }
         lock.writeLock().lock();
         try {
-            Bucket bucket = allStrings.getOrCreateBucket(efficientString.hashCode);
-            existingIndex = bucket.get(efficientString);
+            existingIndex = allStrings.get(efficientString);
             if (existingIndex >= 0) {
                 // conflicting write
                 return allStrings.get(existingIndex);
             }
-            // no conflict
-            efficientString.myIndex = index.getAndIncrement();
+            efficientString.index = indexCounter.getAndIncrement();
             allStrings.put(efficientString);
         } finally {
             lock.writeLock().unlock();
@@ -98,18 +95,23 @@ public class EfficientString {
      * @return index of this efficient string.
      */
     public int index() {
-        return myIndex;
+        return index;
     }
 
     /**
      * @return the index that will be used for the next string that is created with fromString.
      */
     public static int nextIndex() {
-        return index.get();
+        return indexCounter.get();
     }
 
     private int calculateHashCode() {
-        return Math.abs(HASH_FUNCTION.hashBytes(bytes).asInt()) % HASH_MODULO;
+        int intHash = HASH_FUNCTION.hashBytes(bytes).asInt();
+        if(intHash ==  Integer.MIN_VALUE) {
+            // Math.abs does not handle MIN_VALUE very nicely. So, pick something else.
+            intHash=0;
+        }
+        return Math.abs(intHash);
     }
 
     @Override
@@ -124,8 +126,8 @@ public class EfficientString {
         }
         EfficientString es = (EfficientString) obj;
         // before they are added to the bimap, efficient strings have an index of -1
-        if (es.myIndex != -1 && myIndex != -1) {
-            return es.myIndex == myIndex;
+        if (es.index != -1 && index != -1) {
+            return es.index == index;
         }
         // edge case that only occurs for strings that are being created
         return Arrays.equals(bytes, es.bytes);
@@ -150,7 +152,7 @@ public class EfficientString {
         lock.writeLock().lock();
         try {
             allStrings = new EfficientStringBiMap(HASH_MODULO);
-            index.set(0);
+            indexCounter.set(0);
         } finally {
             lock.writeLock().unlock();
         }

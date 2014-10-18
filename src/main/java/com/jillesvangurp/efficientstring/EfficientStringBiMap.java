@@ -17,7 +17,7 @@ class EfficientStringBiMap {
 
     public void put(EfficientString es) {
         Bucket upper = getOrCreateBucket(capacity + es.index() % capacity);
-        Bucket lower = getOrCreateBucket(es.hashCode());
+        Bucket lower = getOrCreateBucket(es.hashCode() % capacity);
         lower.append(es);
         upper.append(es);
     }
@@ -32,7 +32,7 @@ class EfficientStringBiMap {
     }
 
     public int get(EfficientString key) {
-        Bucket bucket = buckets[key.hashCode()];
+        Bucket bucket = buckets[key.hashCode() % capacity];
         if (bucket == null) {
             return -1;
         } else {
