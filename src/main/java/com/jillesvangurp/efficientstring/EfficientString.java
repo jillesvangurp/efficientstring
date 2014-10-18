@@ -44,6 +44,7 @@ public class EfficientString {
 
     private EfficientString(String s) {
         bytes = s.getBytes(UTF8);
+        // EfficientString is immutable so we can pre-calculate the hashCode and reuse it.
         hashCode = calculateHashCode();
     }
 
