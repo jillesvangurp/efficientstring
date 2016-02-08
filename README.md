@@ -59,3 +59,7 @@ Alternatively, you can exercise your rights under the license and simply copy an
     * replace guava bimap with a more memory efficient custom structure.
 * 1.0
     * first release
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/jillesvangurp/efficientstring/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
